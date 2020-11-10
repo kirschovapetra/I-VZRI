@@ -59,12 +59,14 @@ crashlytics-build.properties
 
 Prednasky/
 **.meta
-*.zip
-*.pdf
+**.zip
+**.pdf
+**.blend1
 
 **/.idea
 **/Library
-**/Log
+**/Logs
 **/Obj
 **/ProjectSettings
 **/UserSettings
+**/Packages
