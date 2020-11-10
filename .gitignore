@@ -2,9 +2,9 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/master/Unity.gitignore
 #
-*/[Ll]ibrary/
+*/*/Library/
 */[Tt]emp/
-*/[Oo]bj/
+*/*/obj/
 */[Bb]uild/
 */[Bb]uilds/
 */[Ll]ogs/
@@ -58,6 +58,13 @@ crashlytics-build.properties
 *Build/
 
 Prednasky/
-*.meta
+**.meta
 *.zip
 *.pdf
+
+**/.idea
+**/Library
+**/Log
+**/Obj
+**/ProjectSettings
+**/UserSettings
