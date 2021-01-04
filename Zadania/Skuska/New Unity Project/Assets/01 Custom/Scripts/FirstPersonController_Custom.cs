@@ -1,18 +1,15 @@
-﻿/*  Zjednoduseny FirstPersonController z UnityStandardAssets
+﻿/*  Zjednoduseny a upraveny FirstPersonController z UnityStandardAssets
     src: https://assetstore.unity.com/packages/essentials/asset-packs/standard-assets-for-unity-2018-4-32351 */
 
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
-using Random = UnityEngine.Random;
 #pragma warning disable 618, 649
 
 [RequireComponent(typeof (CharacterController))]
 [RequireComponent(typeof (AudioSource))]
 
-
 public class FirstPersonController_Custom : MonoBehaviour {
-    
-    // zoom
+
     [Header("Zoom")]
     public float zoomSpeed = 10;
     public float maxZoom = 120;
@@ -22,10 +19,10 @@ public class FirstPersonController_Custom : MonoBehaviour {
     public float m_WalkSpeed;
     public float m_GravityMultiplier;
     public float m_StepInterval;
-    public AudioClip[] m_FootstepSounds;    // an array of footstep sounds that will be randomly selected from.
+    public AudioClip[] m_FootstepSounds; 
 
     [Header("Rotácia kamery")]
-    public UnityStandardAssets.Characters.FirstPerson.MouseLook m_MouseLook;
+    public MouseLook_Custom m_MouseLook;
     
     private Camera m_Camera;
     private float m_YRotation;
@@ -44,7 +41,7 @@ public class FirstPersonController_Custom : MonoBehaviour {
         m_StepCycle = 0f;
         m_NextStep = m_StepCycle/2f;
         m_AudioSource = GetComponent<AudioSource>();
-		m_MouseLook.Init(transform , m_Camera.transform);
+		m_MouseLook.Init(transform, m_Camera.transform);
     }
 
     private void Update() {
@@ -81,10 +78,9 @@ public class FirstPersonController_Custom : MonoBehaviour {
         m_CollisionFlags = m_CharacterController.Move(m_MoveDir*Time.fixedDeltaTime);
 
         ProgressStepCycle(speed);
-        m_MouseLook.UpdateCursorLock();
     }
-
-
+    
+    
     private void ProgressStepCycle(float speed) {
         if (m_CharacterController.velocity.sqrMagnitude > 0 && (m_Input.x != 0 || m_Input.y != 0))
             m_StepCycle += (m_CharacterController.velocity.magnitude + speed)* Time.fixedDeltaTime;
@@ -114,13 +110,10 @@ public class FirstPersonController_Custom : MonoBehaviour {
         // Read input
         float horizontal = CrossPlatformInputManager.GetAxis("Horizontal");
         float vertical = CrossPlatformInputManager.GetAxis("Vertical");
-        // float scroll = CrossPlatformInputManager.GetAxis("Mouse ScrollWheel");
-        
-       
         
         speed = m_WalkSpeed;
         m_Input = new Vector3(horizontal, vertical);
-        // m_Scroll = scroll;
+        
         // normalize input if it exceeds 1 in combined length:
         if (m_Input.sqrMagnitude > 1) 
             m_Input.Normalize();
