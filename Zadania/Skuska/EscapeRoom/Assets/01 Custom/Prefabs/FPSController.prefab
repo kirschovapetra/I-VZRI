@@ -284,6 +284,3 @@ MonoBehaviour:
     clampVerticalRotation: 1
     MinimumX: -90
     MaximumX: 90
-    smooth: 0
-    smoothTime: 5
-    lockCursor: 0

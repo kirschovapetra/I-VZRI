@@ -1,39 +1,69 @@
 ﻿using System;
 using System.Threading;
+using TMPro;
 using UnityEngine;
 
 
 /* interakcia s predmetmi - bez condition */
 
 public class Interact : MonoBehaviour {
-    private Animator animator;
     public Boolean locked;
     public Boolean missing;
+    public Boolean mainDoor;
+    public InteractiveObjectsContainer IOC;
+    private Animator animator;
+    private AudioSource audioSrc;
     void Start() {
-        animator = gameObject.GetComponent<Animator>();
+        audioSrc = GetComponent<AudioSource>();
+        
+        Animator gameObjectAnimator = GetComponent<Animator>();
+        Animator parentAnimator = transform.parent.GetComponent<Animator>();
+
+        animator = gameObjectAnimator != null ? gameObjectAnimator : parentAnimator;
     }
 
     private void OnMouseDown() {
-        if (locked) {
-            LockedMessage();
-            return;
-        }
-        if (missing) {
-            MissingMessage();
-            return;
-        }
-        if (animator!= null) {
+        if (gameObject.CompareTag("Interactable")) {
+        
+            if (locked) {
+                Comment("Zamknuté.");
+                IOC.lockedAudio.Play();
+                return;
+            } 
+            if (missing) {
+                Comment("Niečo tu chýba.");
+                IOC.lockedAudio.Play();
+                return;
+            } 
+            if (mainDoor) {
+                Comment("Musí existovať aj iná cesta...");
+                audioSrc.Play();
+                return;
+            }
+      
+            if (audioSrc != null) {
+                print(audioSrc.clip.name);
+                audioSrc.Play();
+            }
+            if (animator == null) return;
+            
             Boolean interact = animator.GetBool("Interact");
             animator.SetBool("Interact", !interact);
         }
     }
 
-    public void LockedMessage() {
-        //TODO show msg
-        Debug.Log("Zamknute");
+
+    
+    private void Comment(string comment) {
+        IOC.commentText.text = comment;
+        IOC.commentText.transform.parent.gameObject.SetActive(true);
+        Invoke(nameof(ClearComment), 1.0f);
     }
-    public void MissingMessage() {
-        //TODO show msg
-        Debug.Log("Nieco tu chyba");
+
+    private void ClearComment() {
+        IOC.commentText.text = "";
+        IOC.commentText.transform.parent.gameObject.SetActive(false);
     }
+
+
 }

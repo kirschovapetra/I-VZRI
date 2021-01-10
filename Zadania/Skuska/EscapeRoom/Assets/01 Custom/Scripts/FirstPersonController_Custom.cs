@@ -33,7 +33,7 @@ public class FirstPersonController_Custom : MonoBehaviour {
     private float m_StepCycle;
     private float m_NextStep;
     private AudioSource m_AudioSource;
-    private float currentZoom = 80;
+    private float currentZoom = 50;
 
     private void Start() {
         m_CharacterController = GetComponent<CharacterController>();

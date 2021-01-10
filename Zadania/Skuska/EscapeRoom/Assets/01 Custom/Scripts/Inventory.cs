@@ -9,12 +9,12 @@ public class Inventory : MonoBehaviour {
     public static void AddToInventory(GameObject obj) {
         inventory.Add(obj.name, obj);
         obj.SetActive(false);
-        print(obj.name +"pridane; Inventory = "+inventory);
+        print(obj.name +" pridane; inventory length = "+inventory.Count);
     }
     
     public static void RemoveFromInventory(string objName) {
         inventory.Remove(objName);
-        print(objName + "odobrane; Inventory = "+inventory);
+        print(objName + " odobrane; inventory length = " + inventory.Count);
     }
 
     public static Boolean IsInInventory(string objName) {

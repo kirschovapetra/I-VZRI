@@ -15,6 +15,8 @@ public class ChairJumpScare : MonoBehaviour {
         Boolean isMoving = animator.GetBool("Move");
         if (!isMoving && other.CompareTag("Player")) {
             animator.SetBool("Move",true);
+            GetComponent<AudioSource>().Play();
+            chair.GetComponent<AudioSource>().Play();
         }
     }
 }

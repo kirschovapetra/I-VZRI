@@ -3,28 +3,12 @@ using TMPro;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour {
-    
     [Header("Main kamera")]
     public Camera cam;                   
     
     [Header("Kurzory")]
     public Texture2D cursorSelect;       
     public Texture2D cursorPointer;
-    
-    [Header("Interaktívne objekty")] 
-    public GameObject fuseBox;
-    public GameObject musicBox;
-    public GameObject painting;
-    public GameObject drawerLocked;
-    public GameObject radioBack;
-    public GameObject trapDoor;
-    public GameObject wardrobe;
-    public GameObject deskLampPurple;
-    public GameObject[] books;
-    public GameObject lightsOff;
-    public GameObject lightsOn;
-    
-    public TextMeshProUGUI commentText;
     
     [HideInInspector]
     public Boolean correctKeypadCode = false;
@@ -37,23 +21,22 @@ public class GameManager : MonoBehaviour {
     private Boolean[] bookCode = {true, false, true, true, false, false};
     
     // animatory
-    Animator fuseBoxAnimator;
-    Animator musicBoxAnimator;
-    Animator radioAnimator;
-    Animator trapDoorAnimator;
-    Animator wardrobeAnimator;
+    private Animator fuseBoxAnimator;
+    private Animator musicBoxAnimator;
 
+    private InteractiveObjectsContainer IOC;
+
+    private Boolean playedAudio = false;
     void Start() {
         // kurzor v strede obrazovky
         Cursor.lockState = CursorLockMode.Locked;        
         Cursor.visible = true;
+
+        IOC = GetComponent<InteractiveObjectsContainer>();
         
         // animatory
-        fuseBoxAnimator = fuseBox.GetComponent<Animator>();
-        musicBoxAnimator = musicBox.GetComponent<Animator>();
-        radioAnimator = radioBack.GetComponent<Animator>();
-        trapDoorAnimator = trapDoor.GetComponent<Animator>();
-        wardrobeAnimator = wardrobe.GetComponent<Animator>();
+        fuseBoxAnimator = IOC.fuseBox.GetComponent<Animator>();
+        musicBoxAnimator = IOC.musicBox.GetComponent<Animator>();
     }
 
     void Update() {
@@ -65,103 +48,93 @@ public class GameManager : MonoBehaviour {
            SetCursor(); // zmena ikony kurzora               
 
            // predmety, na ktore sa da kliknut
-           if (Input.GetMouseButtonDown(0)) {
-               if (hit.transform.CompareTag("Interactable") ) 
-                   Interact(hit.transform.name);
-               else if (hit.transform.CompareTag("Collectable")) 
-                   Inventory.AddToInventory(hit.transform.gameObject);
-           }
-           
+           if (Input.GetMouseButtonDown(0) && hit.transform.CompareTag("Interactable")) 
+               ObjectOnClick(hit.transform.name);
+
            // spravny kod knih -> animacia posunutia obrazu
-            if (CorrectBookCode()) {
-                Animator animator = painting.GetComponent<Animator>();
-                animator.SetBool("Move",true);
-            }
-            
-            // spravny kod keypadu -> odomkne sa suflik
+           if (CorrectBookCode()) {
+               if (!playedAudio) {
+                   IOC.correctAudio.Play();
+                   playedAudio = true;
+               }
+               Animator animator = IOC.painting.GetComponent<Animator>();
+               animator.SetBool("Interact", true);
+           }
+
+           // spravny kod keypadu -> odomkne sa suflik
             if (correctKeypadCode) {
-                Animator animator = drawerLocked.GetComponent<Animator>();
+                IOC.drawerLocked.GetComponent<Interact>().locked = false;
+                Animator animator = IOC.drawerLocked.GetComponent<Animator>();
                 animator.SetBool("Interact", true);
-                drawerLocked.GetComponent<Interact>().locked = false;
+                correctKeypadCode = false;
+            }
+
+            Boolean musicBoxFinished = musicBoxAnimator.GetBool("SwitchOn") && 
+                                       !IOC.musicBox.GetComponent<AudioSource>().isPlaying;
+            
+            if (musicBoxFinished) {
+                IOC.correctAudio.Play();
+                GameObject.Find("TrapDoorKey").tag = "Collectable";
+                musicBoxAnimator.SetBool("SwitchOn",false);
             }
         }
     }
     
     // interakcie s klikatelnymi predmetmi
-    private void Interact(String objectHitName) {
-
-        switch (objectHitName) {
-            /****************** main door ******************/
-            case "Main Door":
-                commentText.text = "Musí existovať aj iná cesta...";
-                break;
-            
+    private void ObjectOnClick(String clickedObjectName) {
+        
+        switch (clickedObjectName) {
+               
             /****************** fuse box ******************/
-            case "Fuse Box Door":
-                fuseBoxAnimator.SetBool("Interact", 
-                    !fuseBoxAnimator.GetBool("Interact"));
-                break;
-            case "Fuse Box Switch":
+            case "FuseBoxSwitch":
                 fuseBoxAnimator.SetBool("SwitchOn",true);
                 Invoke(nameof(SwitchOnLights),2.0f);
                 break;
             
             /****************** music box ******************/
-            case "Lid":
-                musicBoxAnimator.SetBool("Interact",true);
-                GameObject.Find("MovingPart").tag = "Interactable";
+            case "BoxLid":
+                GameObject.Find("TrapDoorKey").tag = "Interactable";
                 break;
-            case "MovingPart":
+            case "TrapDoorKey":
+                IOC.musicBox.GetComponent<AudioSource>().Play();
                 musicBoxAnimator.SetBool("SwitchOn",true);
-                GameObject.Find("Handle").tag = "Collectable";
                 break;
             
             /******************** radio *********************/
             case "RadioBack":
-                if (Inventory.IsInInventory("Screwdriver")) {
-                    radioAnimator.SetBool("Interact", true);
-                    radioBack.GetComponent<Interact>().missing = false;
+                if (Inventory.IsInInventory("Screwdriver")) 
                     Inventory.RemoveFromInventory("Screwdriver");
-                }
-                else {
-                    commentText.text = "Niečo tu chýba.";
-                }
                 break;
             
             /****************** trap door ******************/
+            case "Carpet":
+                IOC.trapDoor.SetActive(true);
+                break;
+            
             case "TrapDoor":
                 if (Inventory.IsInInventory("TrapDoorKey")) {
-                    trapDoor.transform.Find("Lock").gameObject.SetActive(false);    // lock zmizne
-                    trapDoorAnimator.SetBool("Interact", true);
-                    trapDoor.GetComponent<Interact>().locked = false;
                     Inventory.RemoveFromInventory("TrapDoorKey");
-                } else {
-                    commentText.text = "Zamknuté.";
+                    IOC.trapDoor.transform.Find("Lock").gameObject.SetActive(false);
+                    IOC.unlockAudio.Play();
                 }
                 break;
             
             /****************** wardrobe ******************/
-            case "Wardrobe":
+            case "W_door1":
+            case "W_door2":
                 if (Inventory.IsInInventory("WardrobeKey")) {
-                    wardrobe.transform.Find("Lock").gameObject.SetActive(false);    // lock zmizne
-                    wardrobeAnimator.SetBool("Interact", true);
-                    wardrobe.GetComponent<Interact>().locked = false;
                     Inventory.RemoveFromInventory("WardrobeKey");
-                } 
-                else {
-                    commentText.text = "Zamknuté.";
+                    IOC.wardrobe.transform.Find("Lock").gameObject.SetActive(false);
+                    IOC.unlockAudio.Play();
                 }
                 break;
             
             /****************** desk lamp ******************/
-            case "DeskLampPurple OFF":
+            case "DeskLampPurple_OFF":
                 if (Inventory.IsInInventory("PurpleLightBulb")) {
-                    deskLampPurple.transform.Find("DeskLampPurple OFF").gameObject.SetActive(false);
-                    deskLampPurple.transform.Find("DeskLampPurple ON").gameObject.SetActive(true);
+                    IOC.deskLampPurple.transform.Find("DeskLampPurple_OFF").gameObject.SetActive(false);
+                    IOC.deskLampPurple.transform.Find("DeskLampPurple_ON").gameObject.SetActive(true);
                     Inventory.RemoveFromInventory("PurpleLightBulb");
-                }
-                else {
-                    commentText.text = "Niečo tu chýba.";
                 }
                 break;
         }
@@ -179,11 +152,11 @@ public class GameManager : MonoBehaviour {
 
     // check, ci je spravny kod knih
     private Boolean CorrectBookCode() {
-        if (books.Length != 6)
+        if (IOC.books.Length != 6)
             return false;
         
-        for (int i = 0; i<books.Length; i++) {
-            Animator animator = books[i].GetComponent<Animator>();
+        for (int i = 0; i<IOC.books.Length; i++) {
+            Animator animator = IOC.books[i].GetComponent<Animator>();
             if (bookCode[i] != animator.GetBool("Interact"))
                 return false;
         }
@@ -192,9 +165,10 @@ public class GameManager : MonoBehaviour {
     
     // zapnutie svetiel
     private void SwitchOnLights() {
-        lightsOff.SetActive(false);
-        lightsOn.SetActive(true);
-        fuseBox.transform.Find("Point Light").gameObject.SetActive(false);
+        IOC.lightsOff.SetActive(false);
+        IOC.lightsOn.SetActive(true);
+        IOC.fuseBox.transform.Find("Point Light").gameObject.SetActive(false);
+        IOC.fuseBox.GetComponent<AudioSource>().Play();
     }
-    
+
 }

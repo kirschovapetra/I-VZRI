@@ -7,10 +7,12 @@ using UnityEngine.UI;
 public class Keypad : MonoBehaviour {
     public GameManager gameManager;
     public TextMeshProUGUI keypadText;
-
+    private AudioSource[] sounds;
     private void Start() {
         keypadText.text = "";
         keypadText.color = Color.white;
+        if (transform.name=="Green")
+            sounds = GetComponents<AudioSource>();
     }
 
     private void OnMouseDown() {
@@ -30,7 +32,6 @@ public class Keypad : MonoBehaviour {
 
     private void Update() {
         if (keypadText.text.Length>6) {
-            // TODO bad sound
             keypadText.color = Color.red;
             Invoke("Clear",0.5f);
         }
@@ -54,10 +55,10 @@ public class Keypad : MonoBehaviour {
         gameManager.correctKeypadCode = result;
         
         if (result) {
-            // TODO good sound
+            sounds[1].Play();
             keypadText.color = Color.green;
         } else {
-            // TODO bad sound
+            sounds[0].Play();
             keypadText.color = Color.red;
             Invoke("Clear",0.5f);
 
