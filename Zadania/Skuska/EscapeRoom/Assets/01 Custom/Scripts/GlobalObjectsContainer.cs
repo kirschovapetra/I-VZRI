@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using TMPro;
 using UnityEngine;
 
-public class InteractiveObjectsContainer : MonoBehaviour
-{
+// globalne premenne
+public class InteractiveObjectsContainer : MonoBehaviour {
     [Header("Interaktívne objekty")] 
     public GameObject fuseBox;
     public GameObject musicBox;
@@ -26,4 +25,8 @@ public class InteractiveObjectsContainer : MonoBehaviour
     public GameObject forestAudio_multi;
     [Header("Text na spodnej časti obrazovky")] 
     public TextMeshProUGUI commentText;
+    [HideInInspector]
+    public Inventory inventory;
+
+    private void Start() { inventory = GetComponent<Inventory>(); }
 }
