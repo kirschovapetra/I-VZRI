@@ -85,8 +85,7 @@ public class FirstPersonController_Custom : MonoBehaviour {
         if (m_CharacterController.velocity.sqrMagnitude > 0 && (m_Input.x != 0 || m_Input.y != 0))
             m_StepCycle += (m_CharacterController.velocity.magnitude + speed)* Time.fixedDeltaTime;
         
-        if (!(m_StepCycle > m_NextStep)) 
-            return;
+        if (!(m_StepCycle > m_NextStep)) return;
         
         m_NextStep = m_StepCycle + m_StepInterval;
 
@@ -120,15 +119,12 @@ public class FirstPersonController_Custom : MonoBehaviour {
         
     }
 
-    private void OnControllerColliderHit(ControllerColliderHit hit)
-    {
+    private void OnControllerColliderHit(ControllerColliderHit hit) {
         Rigidbody body = hit.collider.attachedRigidbody;
         //dont move the rigidbody if the character is on top of it
-        if (m_CollisionFlags == CollisionFlags.Below) 
-            return;
+        if (m_CollisionFlags == CollisionFlags.Below) return;
         
-        if (body == null || body.isKinematic)
-            return;
+        if (body == null || body.isKinematic) return;
         
         body.AddForceAtPosition(m_CharacterController.velocity*0.1f, hit.point, ForceMode.Impulse);
     }

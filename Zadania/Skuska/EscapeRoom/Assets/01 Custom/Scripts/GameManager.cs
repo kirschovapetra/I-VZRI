@@ -1,7 +1,8 @@
 ﻿using System;
-using TMPro;
+using NUnit.Framework.Constraints;
 using UnityEngine;
 
+// manager hry
 public class GameManager : MonoBehaviour {
     [Header("Main kamera")]
     public Camera cam;                   
@@ -11,73 +12,86 @@ public class GameManager : MonoBehaviour {
     public Texture2D cursorPointer;
     
     [HideInInspector]
-    public Boolean correctKeypadCode = false;
+    public Boolean correctKeypadCode;
+    public static Boolean paused;
     
     // raycast
     private Ray ray;
     private RaycastHit hit;
     
     // spravny kod knih
-    private Boolean[] bookCode = {true, false, true, true, false, false};
+    private readonly Boolean[] bookCode = {true, false, true, true, false, false};
     
     // animatory
     private Animator fuseBoxAnimator;
     private Animator musicBoxAnimator;
-
-    private InteractiveObjectsContainer IOC;
-
-    private Boolean playedAudio = false;
+    
+    // globalne premenne
+    private GlobalObjectsContainer GOC;    
+    
+    private Boolean alreadyPlayed;
+    
+    public static Boolean exitingToMenu = false;
+    
     void Start() {
-        // kurzor v strede obrazovky
+        exitingToMenu = false;
+        // kurzor locknuty v strede obrazovky
         Cursor.lockState = CursorLockMode.Locked;        
         Cursor.visible = true;
 
-        IOC = GetComponent<InteractiveObjectsContainer>();
+        GOC = GetComponent<GlobalObjectsContainer>();
         
         // animatory
-        fuseBoxAnimator = IOC.fuseBox.GetComponent<Animator>();
-        musicBoxAnimator = IOC.musicBox.GetComponent<Animator>();
+        fuseBoxAnimator = GOC.fuseBox.GetComponent<Animator>();
+        musicBoxAnimator = GOC.musicBox.GetComponent<Animator>();
     }
 
     void Update() {
+        
         // raycast podla otocenia kamery
         ray = cam.ScreenPointToRay(Input.mousePosition);
         
-        // kurzor zachytil objekt
-        if (Physics.Raycast(ray, out hit, 10.0f)) {
-           SetCursor(); // zmena ikony kurzora               
+        // kurzor nezachytil objekt -> nic sa nestane
+        if (!Physics.Raycast(ray, out hit, 10.0f)) return;
+        
+        // nastavenie kurzora
+        SetCursor();               
+        
+        // ked je pauza, nic sa nestane
+        if (paused) return;
+        
+       // predmety, na ktore sa da kliknut - 'Interactable'
+       if (Input.GetMouseButtonDown(0) && hit.transform.CompareTag("Interactable")) 
+           ObjectOnClick(hit.transform.name);
 
-           // predmety, na ktore sa da kliknut
-           if (Input.GetMouseButtonDown(0) && hit.transform.CompareTag("Interactable")) 
-               ObjectOnClick(hit.transform.name);
-
-           // spravny kod knih -> animacia posunutia obrazu
-           if (CorrectBookCode()) {
-               if (!playedAudio) {
-                   IOC.correctAudio.Play();
-                   playedAudio = true;
-               }
-               Animator animator = IOC.painting.GetComponent<Animator>();
-               animator.SetBool("Interact", true);
+       // spravny kod knih -> animacia posunutia obrazu
+       if (CorrectBookCode()) {
+           if (!alreadyPlayed) {
+               GOC.correctAudio.Play();
+               alreadyPlayed = true;
            }
+           Animator animator = GOC.painting.GetComponent<Animator>();
+           animator.SetBool("Interact", true);
+       }
 
-           // spravny kod keypadu -> odomkne sa suflik
-            if (correctKeypadCode) {
-                IOC.drawerLocked.GetComponent<Interact>().locked = false;
-                Animator animator = IOC.drawerLocked.GetComponent<Animator>();
-                animator.SetBool("Interact", true);
-                correctKeypadCode = false;
-            }
-
-            Boolean musicBoxFinished = musicBoxAnimator.GetBool("SwitchOn") && 
-                                       !IOC.musicBox.GetComponent<AudioSource>().isPlaying;
-            
-            if (musicBoxFinished) {
-                IOC.correctAudio.Play();
-                GameObject.Find("TrapDoorKey").tag = "Collectable";
-                musicBoxAnimator.SetBool("SwitchOn",false);
-            }
+       // spravny kod keypadu -> odomkne sa suflik
+        if (correctKeypadCode) {
+            GOC.drawerLocked.GetComponent<Interact>().locked = false;
+            Animator animator = GOC.drawerLocked.GetComponent<Animator>();
+            animator.SetBool("Interact", true);
+            correctKeypadCode = false;
         }
+
+        // hracia skrinka dohrala -> vysunie sa kluc
+        Boolean musicBoxFinished = musicBoxAnimator.GetBool("SwitchOn") && 
+                                   !GOC.musicBox.GetComponent<AudioSource>().isPlaying;
+        
+        if (musicBoxFinished) {
+            GOC.correctAudio.Play();
+            GameObject.Find("TrapDoorKey").tag = "Collectable";
+            musicBoxAnimator.SetBool("SwitchOn",false);
+        }
+        
     }
     
     // interakcie s klikatelnymi predmetmi
@@ -96,45 +110,45 @@ public class GameManager : MonoBehaviour {
                 GameObject.Find("TrapDoorKey").tag = "Interactable";
                 break;
             case "TrapDoorKey":
-                IOC.musicBox.GetComponent<AudioSource>().Play();
+                GOC.musicBox.GetComponent<AudioSource>().Play();
                 musicBoxAnimator.SetBool("SwitchOn",true);
                 break;
             
             /******************** radio *********************/
             case "RadioBack":
-                if (Inventory.IsInInventory("Screwdriver")) 
-                    Inventory.RemoveFromInventory("Screwdriver");
+                if (GOC.inventory.IsInInventory("Screwdriver")) 
+                    GOC.inventory.RemoveFromInventory("Screwdriver");
                 break;
             
             /****************** trap door ******************/
             case "Carpet":
-                IOC.trapDoor.SetActive(true);
+                GOC.trapDoor.SetActive(true);
                 break;
             
             case "TrapDoor":
-                if (Inventory.IsInInventory("TrapDoorKey")) {
-                    Inventory.RemoveFromInventory("TrapDoorKey");
-                    IOC.trapDoor.transform.Find("Lock").gameObject.SetActive(false);
-                    IOC.unlockAudio.Play();
+                if (GOC.inventory.IsInInventory("TrapDoorKey")) {
+                    GOC.inventory.RemoveFromInventory("TrapDoorKey");
+                    GOC.trapDoor.transform.Find("Lock").gameObject.SetActive(false);
+                    GOC.unlockAudio.Play();
                 }
                 break;
             
             /****************** wardrobe ******************/
             case "W_door1":
             case "W_door2":
-                if (Inventory.IsInInventory("WardrobeKey")) {
-                    Inventory.RemoveFromInventory("WardrobeKey");
-                    IOC.wardrobe.transform.Find("Lock").gameObject.SetActive(false);
-                    IOC.unlockAudio.Play();
+                if (GOC.inventory.IsInInventory("WardrobeKey")) {
+                    GOC.inventory.RemoveFromInventory("WardrobeKey");
+                    GOC.wardrobe.transform.Find("Lock").gameObject.SetActive(false);
+                    GOC.unlockAudio.Play();
                 }
                 break;
             
             /****************** desk lamp ******************/
             case "DeskLampPurple_OFF":
-                if (Inventory.IsInInventory("PurpleLightBulb")) {
-                    IOC.deskLampPurple.transform.Find("DeskLampPurple_OFF").gameObject.SetActive(false);
-                    IOC.deskLampPurple.transform.Find("DeskLampPurple_ON").gameObject.SetActive(true);
-                    Inventory.RemoveFromInventory("PurpleLightBulb");
+                if (GOC.inventory.IsInInventory("PurpleLightBulb")) {
+                    GOC.deskLampPurple.transform.Find("DeskLampPurple_OFF").gameObject.SetActive(false);
+                    GOC.deskLampPurple.transform.Find("DeskLampPurple_ON").gameObject.SetActive(true);
+                    GOC.inventory.RemoveFromInventory("PurpleLightBulb");
                 }
                 break;
         }
@@ -142,22 +156,32 @@ public class GameManager : MonoBehaviour {
 
     // zmena ikony kurzora
     private void SetCursor() {
-        // zmena kurzora pre Interactable a Collectable predmety           
-        if (hit.transform.CompareTag("Interactable") || hit.transform.CompareTag("Collectable"))
-            Cursor.SetCursor(cursorSelect, Vector2.zero, CursorMode.Auto);
-        else
+        
+        if (paused || exitingToMenu) {
+            // kurzorom sa da hybat, ikonka = pointer
+            Cursor.lockState = CursorLockMode.Confined;
             Cursor.SetCursor(cursorPointer, Vector2.zero, CursorMode.Auto);
+        }
+        else { 
+            // kurzor je locknuty v strede obrazovky
+            Cursor.lockState = CursorLockMode.Locked;
+            // zmena ikonky kurzora        
+            if (hit.transform.CompareTag("Interactable") || hit.transform.CompareTag("Collectable"))
+                Cursor.SetCursor(cursorSelect, Vector2.zero, CursorMode.Auto);
+            else
+                Cursor.SetCursor(cursorPointer, Vector2.zero, CursorMode.Auto);
+        }
         Cursor.visible = true;
     }
 
     // check, ci je spravny kod knih
     private Boolean CorrectBookCode() {
-        if (IOC.books.Length != 6)
+        if (GOC.books.Length != 6)
             return false;
         
-        for (int i = 0; i<IOC.books.Length; i++) {
-            Animator animator = IOC.books[i].GetComponent<Animator>();
-            if (bookCode[i] != animator.GetBool("Interact"))
+        for (int i = 0; i<GOC.books.Length; i++) {
+            Animator animator = GOC.books[i].GetComponent<Animator>();
+            if (bookCode[i] != animator.GetBool("Interact"))    // porovnanie polohy knih so spravnym kodom
                 return false;
         }
         return true;
@@ -165,10 +189,22 @@ public class GameManager : MonoBehaviour {
     
     // zapnutie svetiel
     private void SwitchOnLights() {
-        IOC.lightsOff.SetActive(false);
-        IOC.lightsOn.SetActive(true);
-        IOC.fuseBox.transform.Find("Point Light").gameObject.SetActive(false);
-        IOC.fuseBox.GetComponent<AudioSource>().Play();
+        GOC.lightsOff.SetActive(false);
+        GOC.lightsOn.SetActive(true);
+        GOC.fuseBox.transform.Find("Point Light").gameObject.SetActive(false); // zmizne point light nat FuseBoxom
+        GOC.fuseBox.GetComponent<AudioSource>().Play();    // zvukovy efekt
     }
 
+    public static void PauseGame () {
+        Time.timeScale = 0;
+        // AudioListener.pause = true;
+        paused = true;
+    }
+
+    public static void ResumeGame () {
+        Time.timeScale = 1;
+        // AudioListener.pause = false;
+        paused = false;
+    }
+    
 }

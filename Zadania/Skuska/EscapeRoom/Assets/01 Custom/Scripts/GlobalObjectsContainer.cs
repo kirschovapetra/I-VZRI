@@ -1,9 +1,8 @@
-﻿using System;
-using TMPro;
+﻿using TMPro;
 using UnityEngine;
 
 // globalne premenne
-public class InteractiveObjectsContainer : MonoBehaviour {
+public class GlobalObjectsContainer : MonoBehaviour {
     [Header("Interaktívne objekty")] 
     public GameObject fuseBox;
     public GameObject musicBox;

@@ -1,34 +1,40 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+// zbieranie 'Collectable' objektov do inventaru
 public class Collect : MonoBehaviour {
-    public InteractiveObjectsContainer IOC;
-    private Transform transf;
+    
+    public GlobalObjectsContainer GOC;    // globalne premenne
+    
     private void OnMouseDown() {
-        if (!CompareTag("Collectable")) return;
+        // ked je pauza alebo objekt nie je Collectable, nic sa nedeje
+        if (GameManager.paused || !CompareTag("Collectable")) return;
         
-        Inventory.AddToInventory(gameObject);
-        IOC.collectAudio.Play();
+        // pridanie do inventara
+        GOC.inventory.AddToInventory(gameObject);
+        GOC.collectAudio.Play();
         
         switch (gameObject.name) {
             case "Screwdriver":
-                IOC.radioBack.GetComponent<Interact>().missing = false;
+                // bude sa dat otvorit radio
+                GOC.radioBack.GetComponent<Interact>().missing = false;
                 break;
             case "WardrobeKey":
-                GameObject door1 = IOC.wardrobe.transform.Find("W_door1").gameObject;
+                // odomkne sa skrina
+                GameObject door1 = GOC.wardrobe.transform.Find("W_door1").gameObject;
                 door1.GetComponent<Interact>().locked = false;
-                GameObject door2 = IOC.wardrobe.transform.Find("W_door2").gameObject;
+                GameObject door2 = GOC.wardrobe.transform.Find("W_door2").gameObject;
                 door2.GetComponent<Interact>().locked = false;
                 break;
             case "TrapDoorKey":
-                IOC.trapDoor.GetComponent<Interact>().locked = false;
+                // odomknu sa padacie dvere
+                GOC.trapDoor.GetComponent<Interact>().locked = false;
                 break;
             case "PurpleLightBulb":
-                IOC.deskLampPurple.transform.Find("DeskLampPurple_OFF").GetComponent<Interact>().missing = false;
-                IOC.wallLampPurple.transform.Find("WallLampPurple_OFF").gameObject.SetActive(true);
-                IOC.wallLampPurple.transform.Find("WallLampPurple_ON").gameObject.SetActive(false);
+                // da sa zasvietit lampa na stole
+                GOC.deskLampPurple.transform.Find("DeskLampPurple_OFF").GetComponent<Interact>().missing = false;
+                // nahradi sa zapnuta lampa vypnutou
+                GOC.wallLampPurple.transform.Find("WallLampPurple_OFF").gameObject.SetActive(true);
+                GOC.wallLampPurple.transform.Find("WallLampPurple_ON").gameObject.SetActive(false);
                 break;
         }
     }
