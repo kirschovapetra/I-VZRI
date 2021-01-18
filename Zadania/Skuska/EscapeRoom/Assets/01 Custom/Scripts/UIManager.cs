@@ -1,16 +1,20 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.SceneManagement;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 // GUI
 public class UIManager : MonoBehaviour {
-
+    
     public Boolean mainMenu;
-    public GameObject menuPanel;
-    public GameObject tutorialPanel;
+    public GameObject menuCanvas;
     public GameObject settingsPanel;
+    [Header("Kurzory")]
+    public Texture2D cursorSelect;       
+    public Texture2D cursorPointer;
+    
+    public static Boolean menuVisible = false;
     
     // audio
     private AudioManager audioManager;
@@ -24,8 +28,11 @@ public class UIManager : MonoBehaviour {
     private Toggle fullScreenToggle;
     private TMP_Dropdown resolutionDropdown;
     private Boolean changed;
+
     
     void Start() {
+        Screen.SetResolution(1920, 1080, true);
+        // fullScreenToggle.isOn = true;
         audioManager = GetComponent<AudioManager>();
 
         // slidery
@@ -34,22 +41,31 @@ public class UIManager : MonoBehaviour {
         // percenta - text
         musicPercent = settingsPanel.transform.Find("MusicPercentText").GetComponent<TextMeshProUGUI>();
         effectsPercent = settingsPanel.transform.Find("EffectsPercentText").GetComponent<TextMeshProUGUI>();
+      
         // screen resolution
         fullScreenToggle = settingsPanel.transform.Find("FullScreenToggle").GetComponent<Toggle>();
         resolutionDropdown = settingsPanel.transform.Find("ResolutionDropdown").GetComponent<TMP_Dropdown>();
         
-        // nastavenie hlasitosti na hodnoty ulozene v PlayerPrefs
+        if (mainMenu) {
+            // kurzor = pointer, pohybuje sa po celej obrazovke
+            SetCursorConfined();
+        } 
+        
+        // nastavenie hlasitosti a dropdownu na hodnoty ulozene v PlayerPrefs
+        resolutionDropdown.value = PlayerPrefs.GetInt("dropdownValue", 0);
+        fullScreenToggle.isOn = PlayerPrefs.GetInt("toggleIsOn",1) == 1;
         musicSlider.value = PlayerPrefs.GetFloat("musicVolume",audioManager.defaultVolume);
         effectsSlider.value = PlayerPrefs.GetFloat("effectsVolume",audioManager.defaultVolume);
         audioManager.SetVolume();
+        
 
-        if (mainMenu)
-            ResetSettings();
+        
     }
 
     private void ChangeDropdownVisibility(Boolean interactable) {
-        resolutionDropdown.interactable = interactable;
-
+        resolutionDropdown.enabled = interactable;
+        
+        // ked je dropdown enabled, ma silnejsie farby a naopak
         if (interactable) {
             resolutionDropdown.transform.Find("Label").GetComponent<TextMeshProUGUI>().alpha = 1.0f;
             resolutionDropdown.transform.Find("Arrow").GetComponent<Image>().color = Color.white;
@@ -59,23 +75,25 @@ public class UIManager : MonoBehaviour {
             resolutionDropdown.transform.Find("Arrow").GetComponent<Image>().color = new Color(0.34f, 0.34f, 0.34f);
         }
     }
-
-    private void SetAudioText() {
-        // nastavenie textu - percento hlasitosti
-        musicPercent.text = Math.Round(musicSlider.value*100,0) + "%";
-        effectsPercent.text = Math.Round(effectsSlider.value*100,0) + "%";
-    }
+    
     
     private void Update() {
-
-        SetAudioText();
         
-        // prepnutie full screen / windowed mode
+        musicPercent.SetText(
+            Math.Round(musicSlider.value*100.0f) + "%");
+        effectsPercent.SetText(
+            Math.Round(effectsSlider.value*100.0f) + "%");
+        
+        // prepnutie full screen / windowed mode, visibility dropdownu
         if(fullScreenToggle.isOn) {
+            PlayerPrefs.SetInt("toggleIsOn", 1);
             ChangeDropdownVisibility(false);
-            Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-        }
-        else {
+            PlayerPrefs.SetInt("dropdownValue", 6);
+            resolutionDropdown.value = 6;
+            Screen.SetResolution(1920, 1080, true);
+            Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+        } else {
+            PlayerPrefs.SetInt("toggleIsOn", 0);
             ChangeDropdownVisibility(true);
             Screen.fullScreenMode = FullScreenMode.Windowed;
             if (!changed) {
@@ -83,39 +101,39 @@ public class UIManager : MonoBehaviour {
                 changed = true;
             }
         }
-
-        // zobrazenie/skrytie menu po stlaceni 'Esc' (iba pocas hry)
-        if (!mainMenu && Input.GetKeyDown(KeyCode.Escape))
+        
+        // zobrazenie/skrytie menu po stlaceni 'Esc' iba pocas hry
+        if (!mainMenu && Input.GetKeyDown(KeyCode.Escape) && !Inventory.inventoryVisible) 
             ToggleMenuOverlay();
+        
     }
 
 
     // zobrazenie/skrytie menu (maleho okna)
     public void ToggleMenuOverlay() {
-        Boolean menuVisible = !GameManager.exitingToMenu && !menuPanel.activeSelf;
+        // default - menu visible, ostatne hidden
+        menuCanvas.transform.Find("MenuPanel").gameObject.SetActive(true);
+        menuCanvas.transform.Find("SettingsPanel").gameObject.SetActive(false);
+        menuCanvas.transform.Find("TutorialPanel").gameObject.SetActive(false);
+        
+        menuVisible = !GameManager.exitingToMenu && !menuCanvas.activeSelf;
         
         // hra je pauznuta, ked sa zobrazuje menu
         if (menuVisible) 
-            GameManager.PauseGame();    
+            GameManager.PauseGame();
         else 
             GameManager.ResumeGame();
         
-        menuPanel.SetActive(menuVisible);
+
+        menuCanvas.SetActive(menuVisible);
     }
 
     // spustenie hry
     public void StartGame() {
         GetComponent<Fade>().FadeOut();
-        Invoke(nameof(LoadEscapeRoom), 2.55f);
+        StartCoroutine(GameManager.WaitAndLoadScene("Escape Room", 2.5f));
     }
 
-    private void LoadEscapeRoom() {
-        SceneManager.LoadScene("Escape Room");
-    }
-
-    private void LoadMainMenu() {
-        SceneManager.LoadScene("Main Menu");
-    }
     // ukoncenie hry
     public void Exit() {
 #if UNITY_EDITOR
@@ -123,53 +141,42 @@ public class UIManager : MonoBehaviour {
 #else
 			Application.Quit ();
 #endif
-    
     }
     
     // hlavne menu
     public void ExitToMainMenu() {
         GameManager.exitingToMenu = true;
-        // GameManager.ResumeGame();
         GetComponent<Fade>().FadeOut();
-        Invoke(nameof(LoadMainMenu), 2.55f);
+        StartCoroutine(GameManager.WaitAndLoadScene("Main Menu", 2.5f));
         ToggleMenuOverlay();
-
-    }
-
-    // prepinanie zobrazenia objektov
-    private void ToggleObjects(GameObject visible, GameObject hidden) {
-        visible.SetActive(true);
-        hidden.SetActive(false);
     }
     
-    // zobrazenie a skrytie tutorialu
-    public void ShowTutorial() { ToggleObjects(tutorialPanel,menuPanel); }
-    public void HideTutorial() { ToggleObjects(menuPanel,tutorialPanel); }
-    
-    public void ShowTutorial_Main() { ToggleObjects(tutorialPanel,settingsPanel); }
-    public void HideTutorial_Main() { tutorialPanel.gameObject.SetActive(false); }
-    
-    // zobrazenie a skrytie nastaveni
-    public void ShowSettings() { ToggleObjects(settingsPanel,menuPanel); }
-    public void HideSettings() { ToggleObjects(menuPanel,settingsPanel); }
-    
-    public void ShowSettings_Main() { ToggleObjects(settingsPanel,tutorialPanel); }
-    public void HideSettings_Main() { settingsPanel.gameObject.SetActive(false); }
     
     //nastavenie hlasitosti hudby 
-    public void UpdateMusicVolume() {
-        PlayerPrefs.SetFloat("musicVolume", musicSlider.value); 
+    public void UpdateVolume() {
+        GameObject slider = EventSystem.current.currentSelectedGameObject;
+
+        if (slider == null) return;
+        
+        if (slider.name.Equals("MusicSlider")) {
+            PlayerPrefs.SetFloat("musicVolume", musicSlider.value);
+        }
+        else if (slider.name.Equals("EffectsSlider")) {
+            PlayerPrefs.SetFloat("effectsVolume", effectsSlider.value);
+        }
+        
         audioManager.SetVolume();
     }
 
-    //nastavenie hlasitosti zvukovych efektov
-    public void UpdateEffectsVolume() {
-        PlayerPrefs.SetFloat("effectsVolume", effectsSlider.value); 
-        audioManager.SetVolume();
-    }
-		
     // default nastavenia
     public void ResetSettings() {
+        
+        PlayerPrefs.SetInt("toggleIsOn", 1);
+        fullScreenToggle.isOn = true;
+        
+        PlayerPrefs.SetInt("dropdownValue", 0);
+        resolutionDropdown.value = 0;
+
         PlayerPrefs.SetFloat("musicVolume", audioManager.defaultVolume);
         musicSlider.value = audioManager.defaultVolume;
    
@@ -186,8 +193,26 @@ public class UIManager : MonoBehaviour {
     public void ChangeResolution() {
         var resolution = resolutionDropdown.options[resolutionDropdown.value];
         string[] splitString = resolution.text.Split('x');
-        // print(splitString[0] + " "+ splitString[1]);
         Screen.SetResolution(Int32.Parse(splitString[0]), Int32.Parse(splitString[1]), false);
+        PlayerPrefs.SetInt("dropdownValue", resolutionDropdown.value);
         
+    }
+
+    public void SetCursorConfined() {
+        // kurzorom sa da hybat, ikonka = pointer
+        Cursor.lockState = CursorLockMode.Confined;
+        Cursor.SetCursor(cursorPointer, Vector2.zero, CursorMode.Auto);
+        Cursor.visible = true;
+    }
+
+    public void SetCursorLocked(RaycastHit hit) {
+        // kurzor je locknuty v strede obrazovky
+        Cursor.lockState = CursorLockMode.Locked;
+        // zmena ikonky kurzora        
+        if (hit.transform.CompareTag("Interactable") || hit.transform.CompareTag("Collectable"))
+            Cursor.SetCursor(cursorSelect, Vector2.zero, CursorMode.Auto);
+        else
+            Cursor.SetCursor(cursorPointer, Vector2.zero, CursorMode.Auto);
+        Cursor.visible = true;
     }
 }

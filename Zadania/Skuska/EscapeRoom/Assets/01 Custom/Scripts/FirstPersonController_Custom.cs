@@ -1,8 +1,11 @@
 ﻿/*  Zjednoduseny a upraveny FirstPersonController z UnityStandardAssets
     src: https://assetstore.unity.com/packages/essentials/asset-packs/standard-assets-for-unity-2018-4-32351 */
 
+using System;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
+using Random = UnityEngine.Random;
+
 #pragma warning disable 618, 649
 
 [RequireComponent(typeof (CharacterController))]
@@ -23,9 +26,8 @@ public class FirstPersonController_Custom : MonoBehaviour {
 
     [Header("Rotácia kamery")]
     public MouseLook_Custom m_MouseLook;
-    
+
     private Camera m_Camera;
-    private float m_YRotation;
     private Vector2 m_Input;
     private Vector3 m_MoveDir = Vector3.zero;
     private CharacterController m_CharacterController;
@@ -34,7 +36,6 @@ public class FirstPersonController_Custom : MonoBehaviour {
     private float m_NextStep;
     private AudioSource m_AudioSource;
     private float currentZoom = 50;
-
     private void Start() {
         m_CharacterController = GetComponent<CharacterController>();
         m_Camera = Camera.main;
@@ -42,11 +43,14 @@ public class FirstPersonController_Custom : MonoBehaviour {
         m_NextStep = m_StepCycle/2f;
         m_AudioSource = GetComponent<AudioSource>();
 		m_MouseLook.Init(transform, m_Camera.transform);
-    }
 
+    }
+    
+    
     private void Update() {
-        m_MouseLook.LookRotation (transform, m_Camera.transform);
         
+        m_MouseLook.LookRotation (transform, m_Camera.transform);
+
         //zoom
         float scroll = Input.GetAxis("Mouse ScrollWheel");
         currentZoom -= scroll * zoomSpeed;

@@ -24,6 +24,7 @@ public class Interact : MonoBehaviour {
 
     // akcie po kliknuti mysou
     private void OnMouseDown() {
+
         if (GameManager.paused || !gameObject.CompareTag("Interactable")) return;
         
         // koment a zvukovy efekt podla typu objektu

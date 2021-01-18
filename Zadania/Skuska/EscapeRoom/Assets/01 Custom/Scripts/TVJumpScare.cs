@@ -10,6 +10,10 @@ public class TVJumpScare : MonoBehaviour {
     // spusti sa video na TV
     private void OnTriggerEnter(Collider other) {
         if (!alreadyPlayed && other.CompareTag("Player")) {
+            
+            // kamera sa otaca za TV
+            MouseLook_Custom.SetTransformToFollow(transform.Find("LookAtPoint").gameObject, 200f);
+
             videoPlayer.Play();
             alreadyPlayed = true;
         }

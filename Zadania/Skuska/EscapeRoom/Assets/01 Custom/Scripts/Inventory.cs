@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using NUnit.Framework.Constraints;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -10,6 +11,8 @@ public class Inventory : MonoBehaviour {
     public GameObject inventoryButtonPrefab;     // prefab buttonu inventaru na bocnom paneli 
     public Sprite[] sprites;                     // obrazky 'Collectable' objektov
 
+    public static Boolean inventoryVisible = false;
+    
     // inventar <nazov, objekt>
     private Dictionary<string, GameObject> inventory = new Dictionary<string, GameObject>();
     
@@ -26,7 +29,7 @@ public class Inventory : MonoBehaviour {
 
     void Update() {
         // zobrazenie/skrytie inventaru po stlaceni 'I'
-        if (Input.GetKeyDown(KeyCode.I)) 
+        if (Input.GetKeyDown(KeyCode.I) && !UIManager.menuVisible) 
             ToggleInventory(); 
     }
 
@@ -74,7 +77,7 @@ public class Inventory : MonoBehaviour {
     private void ToggleInventory() {
         HideInventoryDetails(""); // skryju sa vsetky nahlady
         
-        Boolean inventoryVisible = !inventoryPanel.activeSelf;
+        inventoryVisible = !inventoryPanel.activeSelf;
         
         // hra je pauznuta, ked sa zobrazuje inventar
         if (inventoryVisible) 

@@ -70,6 +70,8 @@ AudioMixerController:
   m_ExposedParameters:
   - guid: 2b6021b2e78651140939cdccffb9fe7b
     name: effectsVolume
+  - guid: 20c8e613d1ffd574ca83136513276e2c
+    name: jumpscaresVolume
   - guid: 9a03240f8501fdb4bb8bf197f4328407
     name: masterVolume
   - guid: 467e939f88a97d54188177a95198d3c0
@@ -130,7 +132,7 @@ AudioMixerSnapshotController:
   m_SnapshotID: c796b23dcd31f97479ea6a7174984e8e
   m_FloatValues:
     2b6021b2e78651140939cdccffb9fe7b: -0.02577656
-    20c8e613d1ffd574ca83136513276e2c: 0
+    20c8e613d1ffd574ca83136513276e2c: 5.1526933
     9a03240f8501fdb4bb8bf197f4328407: 0
     467e939f88a97d54188177a95198d3c0: -4.975939
   m_TransitionOverrides: {}

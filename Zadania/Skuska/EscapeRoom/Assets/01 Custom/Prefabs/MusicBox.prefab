@@ -55,6 +55,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -81,6 +82,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &1279541497884972501
 GameObject:
   m_ObjectHideFlags: 0
@@ -143,7 +145,7 @@ MonoBehaviour:
   locked: 0
   missing: 0
   mainDoor: 0
-  IOC: {fileID: 0}
+  GOC: {fileID: 0}
 --- !u!1 &6157459716511794757
 GameObject:
   m_ObjectHideFlags: 0
@@ -199,6 +201,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -223,6 +226,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &6157459717237102911
 GameObject:
   m_ObjectHideFlags: 0
@@ -336,6 +340,7 @@ MeshRenderer:
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -360,6 +365,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &6157459717418901192
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -650,7 +656,7 @@ Transform:
   m_GameObject: {fileID: 7264122786140267525}
   m_LocalRotation: {x: -0.43880707, y: -0.5544802, z: 0.5544803, w: 0.43880707}
   m_LocalPosition: {x: 0, y: 0.32466906, z: 0}
-  m_LocalScale: {x: 1.0546432, y: 1.0546428, z: 1.0546429}
+  m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 5978820426153186595}
   m_RootOrder: 1
@@ -662,7 +668,7 @@ MeshFilter:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7264122786140267525}
-  m_Mesh: {fileID: 7956639827289759328, guid: f996fe7fc4d466a438d1aa2b0653cb05, type: 3}
+  m_Mesh: {fileID: 7956639827289759328, guid: 23ed2e1cbf1c910409bffa6db45f5440, type: 3}
 --- !u!23 &8373752049948824118
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -678,6 +684,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -704,6 +711,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1 &7347626820381296527
 GameObject:
   m_ObjectHideFlags: 0
@@ -759,6 +767,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
@@ -785,6 +794,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!1001 &5222824798170243028
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -856,6 +866,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: TrapDoorKey
+      objectReference: {fileID: 0}
+    - target: {fileID: 7895272830270072535, guid: 9649ab6292da06843967f5c33cf04737,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9649ab6292da06843967f5c33cf04737, type: 3}

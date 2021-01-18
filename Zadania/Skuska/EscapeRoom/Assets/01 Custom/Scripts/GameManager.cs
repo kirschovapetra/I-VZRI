@@ -1,16 +1,14 @@
 ﻿using System;
+using System.Collections;
 using NUnit.Framework.Constraints;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 // manager hry
 public class GameManager : MonoBehaviour {
     [Header("Main kamera")]
-    public Camera cam;                   
-    
-    [Header("Kurzory")]
-    public Texture2D cursorSelect;       
-    public Texture2D cursorPointer;
-    
+    public Camera cam;
+
     [HideInInspector]
     public Boolean correctKeypadCode;
     public static Boolean paused;
@@ -28,6 +26,7 @@ public class GameManager : MonoBehaviour {
     
     // globalne premenne
     private GlobalObjectsContainer GOC;    
+    private UIManager uiManager;    
     
     private Boolean alreadyPlayed;
     
@@ -35,11 +34,13 @@ public class GameManager : MonoBehaviour {
     
     void Start() {
         exitingToMenu = false;
+        
         // kurzor locknuty v strede obrazovky
         Cursor.lockState = CursorLockMode.Locked;        
         Cursor.visible = true;
 
         GOC = GetComponent<GlobalObjectsContainer>();
+        uiManager = GetComponent<UIManager>();
         
         // animatory
         fuseBoxAnimator = GOC.fuseBox.GetComponent<Animator>();
@@ -66,7 +67,10 @@ public class GameManager : MonoBehaviour {
 
        // spravny kod knih -> animacia posunutia obrazu
        if (CorrectBookCode()) {
+
            if (!alreadyPlayed) {
+               // kamera sa otaca na obraz
+               MouseLook_Custom.SetTransformToFollow(GOC.painting, 200f);
                GOC.correctAudio.Play();
                alreadyPlayed = true;
            }
@@ -76,6 +80,9 @@ public class GameManager : MonoBehaviour {
 
        // spravny kod keypadu -> odomkne sa suflik
         if (correctKeypadCode) {
+            // kamera sa otaca na suflik
+            MouseLook_Custom.SetTransformToFollow(GOC.drawerLocked, 200f);
+
             GOC.drawerLocked.GetComponent<Interact>().locked = false;
             Animator animator = GOC.drawerLocked.GetComponent<Animator>();
             animator.SetBool("Interact", true);
@@ -87,8 +94,13 @@ public class GameManager : MonoBehaviour {
                                    !GOC.musicBox.GetComponent<AudioSource>().isPlaying;
         
         if (musicBoxFinished) {
+            GameObject trapDoorKey = GameObject.Find("TrapDoorKey");
+            
+            // kamera sa otaca za klucom
+            MouseLook_Custom.SetTransformToFollow(trapDoorKey, 200f);
+            
             GOC.correctAudio.Play();
-            GameObject.Find("TrapDoorKey").tag = "Collectable";
+            trapDoorKey.tag = "Collectable";
             musicBoxAnimator.SetBool("SwitchOn",false);
         }
         
@@ -156,22 +168,10 @@ public class GameManager : MonoBehaviour {
 
     // zmena ikony kurzora
     private void SetCursor() {
-        
-        if (paused || exitingToMenu) {
-            // kurzorom sa da hybat, ikonka = pointer
-            Cursor.lockState = CursorLockMode.Confined;
-            Cursor.SetCursor(cursorPointer, Vector2.zero, CursorMode.Auto);
-        }
-        else { 
-            // kurzor je locknuty v strede obrazovky
-            Cursor.lockState = CursorLockMode.Locked;
-            // zmena ikonky kurzora        
-            if (hit.transform.CompareTag("Interactable") || hit.transform.CompareTag("Collectable"))
-                Cursor.SetCursor(cursorSelect, Vector2.zero, CursorMode.Auto);
-            else
-                Cursor.SetCursor(cursorPointer, Vector2.zero, CursorMode.Auto);
-        }
-        Cursor.visible = true;
+        if (paused || exitingToMenu) 
+            uiManager.SetCursorConfined();
+        else 
+            uiManager.SetCursorLocked(hit);
     }
 
     // check, ci je spravny kod knih
@@ -205,6 +205,11 @@ public class GameManager : MonoBehaviour {
         Time.timeScale = 1;
         // AudioListener.pause = false;
         paused = false;
+    }
+    
+    public static IEnumerator WaitAndLoadScene(string sceneName, float time) {
+        yield return new WaitForSeconds(time);
+        SceneManager.LoadScene(sceneName);
     }
     
 }
