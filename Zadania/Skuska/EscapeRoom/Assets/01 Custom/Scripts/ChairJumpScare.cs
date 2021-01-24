@@ -3,26 +3,29 @@ using UnityEngine;
 
 // jumpscare na stolicke po prechode cez trigger
 public class ChairJumpScare : MonoBehaviour {
+    
     public GameObject chair;
+    
+    private Animator chairAnimator;
     private Animator flashingLightAnimator;
-    private Animator animator;
 
     void Start() {
         flashingLightAnimator = GetComponent<Animator>();
-        animator = chair.GetComponent<Animator>();
+        chairAnimator = chair.GetComponent<Animator>();
     }
-
-
+    
     private void OnTriggerEnter(Collider other) {
-        Boolean isMoving = animator.GetBool("Move");
         
-        // animacia, zvukove efekty
+        bool isMoving = chairAnimator.GetBool("Move");
+        
+        // player prejde triggerom
         if (!isMoving && other.CompareTag("Player")) {
             
             // kamera sa otaca za kreslom
             MouseLook_Custom.SetTransformToFollow(transform.Find("LookAtPoint").gameObject, 200f);
            
-            animator.SetBool("Move",true);
+            // animacia, zvukove efekty
+            chairAnimator.SetBool("Move",true);
             flashingLightAnimator.SetBool("Play",true);
             GetComponent<AudioSource>().Play();
             chair.GetComponent<AudioSource>().Play();

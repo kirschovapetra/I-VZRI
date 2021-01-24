@@ -2,7 +2,8 @@
 
 // trigger pre vstup do lesa
 public class ForestTrigger : MonoBehaviour {
-    public GlobalObjectsContainer GOC; // globalne premenne
+    [Header("Globálne premenné")]
+    public GlobalObjectsContainer GOC; 
     private AudioSource[] audioSources;
     void Start() { audioSources = GOC.forestAudio_multi.GetComponents<AudioSource>(); }
     private void OnTriggerEnter(Collider other) {

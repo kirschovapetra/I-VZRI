@@ -1,7 +1,6 @@
 ﻿/*  Zjednoduseny a upraveny FirstPersonController z UnityStandardAssets
     src: https://assetstore.unity.com/packages/essentials/asset-packs/standard-assets-for-unity-2018-4-32351 */
 
-using System;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 using Random = UnityEngine.Random;
@@ -36,6 +35,7 @@ public class FirstPersonController_Custom : MonoBehaviour {
     private float m_NextStep;
     private AudioSource m_AudioSource;
     private float currentZoom = 50;
+    
     private void Start() {
         m_CharacterController = GetComponent<CharacterController>();
         m_Camera = Camera.main;
@@ -43,12 +43,11 @@ public class FirstPersonController_Custom : MonoBehaviour {
         m_NextStep = m_StepCycle/2f;
         m_AudioSource = GetComponent<AudioSource>();
 		m_MouseLook.Init(transform, m_Camera.transform);
-
     }
-    
     
     private void Update() {
         
+        // lock kamery na transform playera (pozera sa pred seba z 1st person pohladu)
         m_MouseLook.LookRotation (transform, m_Camera.transform);
 
         //zoom
@@ -61,7 +60,7 @@ public class FirstPersonController_Custom : MonoBehaviour {
         m_Camera.fieldOfView = currentZoom;
 
     }
-
+    
     private void FixedUpdate() {
         float speed;
         GetInput(out speed);

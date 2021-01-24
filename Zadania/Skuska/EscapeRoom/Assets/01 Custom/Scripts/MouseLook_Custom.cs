@@ -77,7 +77,7 @@ public class MouseLook_Custom {
     }
     
 
-    private Boolean RotationFinished(Transform character, Transform camera) {
+    private bool RotationFinished(Transform character, Transform camera) {
         return m_CameraTargetRot == camera.localRotation && m_CharacterTargetRot == character.localRotation;
     }
 

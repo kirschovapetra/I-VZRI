@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 public class TurnOffLoopingMusic : MonoBehaviour {
-    private Boolean alreadyStopped;
+    private bool alreadyStopped;
     private void OnTriggerEnter(Collider other) {
         if (!alreadyStopped && other.CompareTag("Player")) {
             AudioSource[] audioSources = FindObjectsOfType<AudioSource>();
@@ -11,6 +11,9 @@ public class TurnOffLoopingMusic : MonoBehaviour {
                     audioSource.Pause();
             }
             alreadyStopped = true;
+            
+            // hodiny sa zastavia
+            Clock.stop = true;
         }
     }
 }

@@ -59,7 +59,7 @@ public class Keypad : MonoBehaviour {
     
     // vyhodnotenie kodu
     private void Check(){
-        Boolean result = keypadText.text.Equals("4703");
+        bool result = keypadText.text.Equals("4703");
         
         // set premennej correctKeypadCode v GameManageri, ci je kod spravny/nespravny
         gameManager.correctKeypadCode = result;    
@@ -71,7 +71,7 @@ public class Keypad : MonoBehaviour {
         } else {
             sounds[0].Play();
             keypadText.color = Color.red;
-            Invoke("Clear",0.5f);
+            Invoke(nameof(Clear),0.5f);
 
         }
     }

@@ -2,14 +2,14 @@
 
 // zbieranie 'Collectable' objektov do inventaru
 public class Collect : MonoBehaviour {
-    
-    public GlobalObjectsContainer GOC;    // globalne premenne
+    [Header("Globálne premenné")]
+    public GlobalObjectsContainer GOC;    
     
     private void OnMouseDown() {
         // ked je pauza alebo objekt nie je Collectable, nic sa nedeje
         if (GameManager.paused || !CompareTag("Collectable")) return;
         
-        // pridanie do inventara
+        // pridanie do inventara, zvukovy efekt
         GOC.inventory.AddToInventory(gameObject);
         GOC.collectAudio.Play();
         
@@ -32,7 +32,7 @@ public class Collect : MonoBehaviour {
             case "PurpleLightBulb":
                 // da sa zasvietit lampa na stole
                 GOC.deskLampPurple.transform.Find("DeskLampPurple_OFF").GetComponent<Interact>().missing = false;
-                // nahradi sa zapnuta lampa vypnutou
+                // na stene sa nahradi zapnuta lampa vypnutou
                 GOC.wallLampPurple.transform.Find("WallLampPurple_OFF").gameObject.SetActive(true);
                 GOC.wallLampPurple.transform.Find("WallLampPurple_ON").gameObject.SetActive(false);
                 break;

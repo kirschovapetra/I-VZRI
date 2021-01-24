@@ -11,7 +11,7 @@ public class Inventory : MonoBehaviour {
     public GameObject inventoryButtonPrefab;     // prefab buttonu inventaru na bocnom paneli 
     public Sprite[] sprites;                     // obrazky 'Collectable' objektov
 
-    public static Boolean inventoryVisible = false;
+    public static bool inventoryVisible;
     
     // inventar <nazov, objekt>
     private Dictionary<string, GameObject> inventory = new Dictionary<string, GameObject>();
@@ -35,9 +35,9 @@ public class Inventory : MonoBehaviour {
 
     // pridanie noveho objektu do inventara
     public void AddToInventory(GameObject obj) {
-        inventory.Add(obj.name, obj);
+        inventory.Add(obj.name, obj); 
         obj.SetActive(false);
-        AddToInventory_UI(obj.name);
+        AddToInventory_UI(obj.name); 
     }
     
     // odstranenie objektu z inventara
@@ -46,11 +46,11 @@ public class Inventory : MonoBehaviour {
         RemoveFromInventory_UI(objName);
     }
     
-    public Boolean IsInInventory(string objName) { return inventory.ContainsKey(objName); }
+    public bool IsInInventory(string objName) { return inventory.ContainsKey(objName); }
     
     
     // zobrazenie detailu inventaroveho itemu - zvacseny obrazok
-    public void ShowInventoryDetail() {
+    private void ShowInventoryDetail() {
         // kliknuty button
         GameObject selectedButton = EventSystem.current.currentSelectedGameObject; 
         // nazov obrazka buttonu (child element buttonu je selectedButton/Image)

@@ -5,9 +5,9 @@ using UnityEngine;
 // Interakcie s 'Interactable' objektmi
 public class Interact : MonoBehaviour {
     [Header("Stavy objektov")]
-    public Boolean locked;         
-    public Boolean missing;        
-    public Boolean mainDoor;
+    public bool locked;         
+    public bool missing;        
+    public bool mainDoor;
     [Header("Globálne premenné")]
     public GlobalObjectsContainer GOC;
     
@@ -22,6 +22,7 @@ public class Interact : MonoBehaviour {
         animator = gameObjectAnimator != null ? gameObjectAnimator : parentAnimator;
     }
 
+    
     // akcie po kliknuti mysou
     private void OnMouseDown() {
 
@@ -38,18 +39,15 @@ public class Interact : MonoBehaviour {
             GOC.lockedAudio.Play();
             return;
         } 
-        if (mainDoor) {
+        if (mainDoor) 
             Comment("Musí existovať aj iná cesta...");
-            // audioSrc.Play();
-            // return;
-        }
-  
+
         // prehratie zvuku, ak objekt obsahuje AudioSource
         if (audioSrc != null) audioSrc.Play();
         
         // spustenie animacie, ak objekt/jeho parent obsahuje animator
-        if (animator != null) {
-            Boolean interact = animator.GetBool("Interact");
+        if (!mainDoor && animator != null) {
+            bool interact = animator.GetBool("Interact");
             animator.SetBool("Interact", !interact);
         }
     }
@@ -57,14 +55,16 @@ public class Interact : MonoBehaviour {
     // komentare na spodnej casti obrazovky
     private void Comment(string comment) {
         GOC.commentText.text = comment;
-        GOC.commentText.transform.parent.gameObject.SetActive(true); // zobrazi sa cely spodny panel (parent commentTextu)
+        // zobrazi sa cely spodny panel (parent commentTextu)
+        GOC.commentText.transform.parent.gameObject.SetActive(true); 
         Invoke(nameof(ClearComment), 1.0f);
     }
 
     // skrytie komentu
     private void ClearComment() {
         GOC.commentText.text = "";
-        GOC.commentText.transform.parent.gameObject.SetActive(false); // skryje sa cely spodny panel (parent commentTextu)
+        // skryje sa cely spodny panel (parent commentTextu)
+        GOC.commentText.transform.parent.gameObject.SetActive(false); 
     }
 
 

@@ -5,7 +5,7 @@ using UnityEngine.Video;
 // jumpscare na tv po prechode triggerom
 public class TVJumpScare : MonoBehaviour {
     public VideoPlayer videoPlayer;
-    private Boolean alreadyPlayed;
+    private bool alreadyPlayed;
     
     // spusti sa video na TV
     private void OnTriggerEnter(Collider other) {
