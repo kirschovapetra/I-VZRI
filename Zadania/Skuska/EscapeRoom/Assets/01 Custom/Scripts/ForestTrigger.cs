@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿/********************* trigger pred vstupom do lesa *********************/
 
-// trigger pre vstup do lesa
+using UnityEngine;
+
 public class ForestTrigger : MonoBehaviour {
     [Header("Globálne premenné")]
     public GlobalObjectsContainer GOC; 

@@ -2,7 +2,6 @@
     src: https://assetstore.unity.com/packages/essentials/asset-packs/standard-assets-for-unity-2018-4-32351 */
 
 using System;
-using NUnit.Framework.Constraints;
 using UnityEngine;
 using UnityStandardAssets.CrossPlatformInput;
 
@@ -28,6 +27,7 @@ public class MouseLook_Custom {
     public void LookRotation(Transform character, Transform camera) {
         if (GameManager.paused) return; // pri pauznutej hre sa neda otacat
 
+        // nie je nastaveny objekt, kam sa kamera otaca => klasicke otacanie mysou
         if (transformToFollow == null) {
             float xRot = CrossPlatformInputManager.GetAxis("Mouse Y") * YSensitivity;
             float yRot = CrossPlatformInputManager.GetAxis("Mouse X") * XSensitivity;
@@ -40,11 +40,11 @@ public class MouseLook_Custom {
             camera.localRotation = m_CameraTargetRot;
         }
         else {
-            // relativna poloha pre character a kameru
+            /************ relativna poloha pre character a kameru ***********/
             Vector3 targetDirection_Character = (transformToFollow.position - character.transform.position).normalized;
             Vector3 targetDirection_Camera = (transformToFollow.position - camera.transform.position).normalized;
             
-            // vektor otocenia v smere osi X (kamera) a Y (character)
+            /**** vektor otocenia v smere osi X (kamera) a Y (character) *****/
             m_CameraTargetRot = Quaternion.Euler(
                 Quaternion.LookRotation(targetDirection_Camera).eulerAngles.x, 
                 camera.localRotation.eulerAngles.y, 
@@ -55,7 +55,7 @@ public class MouseLook_Custom {
                 Quaternion.LookRotation(targetDirection_Character).eulerAngles.y, 
                 character.localRotation.eulerAngles.z);
             
-            // nastavenie rotacie kamery a charactera
+            /****************** rotacie kamery a charactera ****************/
             character.localRotation = Quaternion.RotateTowards(
                 character.localRotation, 
                 m_CharacterTargetRot, 
@@ -67,16 +67,17 @@ public class MouseLook_Custom {
                 lookAtSpeed*Time.deltaTime);
         }
 
-        if (RotationFinished(character, camera))
+        // koniec otacania => vynuluje sa
+        if (RotationFinished(character, camera)) 
             transformToFollow = null;
     }
-
+    
+    // nastavenie objektu na otacanie
     public static void SetTransformToFollow(GameObject obj, float speed) {
         transformToFollow = obj.transform;
         lookAtSpeed = speed;
     }
     
-
     private bool RotationFinished(Transform character, Transform camera) {
         return m_CameraTargetRot == camera.localRotation && m_CharacterTargetRot == character.localRotation;
     }

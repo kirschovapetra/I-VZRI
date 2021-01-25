@@ -1,8 +1,7 @@
-﻿using System;
+﻿/*********************** Interakcie s 'Interactable' objektmi ************************/
+
 using UnityEngine;
 
-
-// Interakcie s 'Interactable' objektmi
 public class Interact : MonoBehaviour {
     [Header("Stavy objektov")]
     public bool locked;         
@@ -16,9 +15,9 @@ public class Interact : MonoBehaviour {
     void Start() {
         audioSrc = GetComponent<AudioSource>();
         
+        // bud je animator na objekte alebo v parentovi
         Animator gameObjectAnimator = GetComponent<Animator>();
         Animator parentAnimator = transform.parent.GetComponent<Animator>();
-        // bud je animator na objekte alebo v parentovi
         animator = gameObjectAnimator != null ? gameObjectAnimator : parentAnimator;
     }
 

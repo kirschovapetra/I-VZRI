@@ -1,27 +1,27 @@
-﻿using System;
+﻿/************************* Inventar *************************/
+
 using System.Collections.Generic;
-using NUnit.Framework.Constraints;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// Inventar
 public class Inventory : MonoBehaviour {
     public GameObject inventoryPanel;            // UI panel inventaru
     public GameObject inventoryButtonPrefab;     // prefab buttonu inventaru na bocnom paneli 
     public Sprite[] sprites;                     // obrazky 'Collectable' objektov
-
     public static bool inventoryVisible;
     
     // inventar <nazov, objekt>
     private Dictionary<string, GameObject> inventory = new Dictionary<string, GameObject>();
-    
     // dictionary obrazkov <nazov, obrazok>
-    private readonly Dictionary<String, Sprite> spriteDictionary = new Dictionary<string, Sprite>();
+    private readonly Dictionary<string, Sprite> spriteDictionary = new Dictionary<string, Sprite>();
     // pozicia Y posledneho buttonu na paneli
     private float lastPosY = 0.0f;         
    
     void Start() {
+        inventoryVisible = false;
+        lastPosY = 0.0f;
+        
         // naplnenie dictionary obrazkov
         foreach (var sprite in sprites) 
             spriteDictionary.Add(sprite.name, sprite);
@@ -36,7 +36,7 @@ public class Inventory : MonoBehaviour {
     // pridanie noveho objektu do inventara
     public void AddToInventory(GameObject obj) {
         inventory.Add(obj.name, obj); 
-        obj.SetActive(false);
+        obj.SetActive(false);         // objekt v inventari zmizne z hry
         AddToInventory_UI(obj.name); 
     }
     
@@ -53,10 +53,10 @@ public class Inventory : MonoBehaviour {
     private void ShowInventoryDetail() {
         // kliknuty button
         GameObject selectedButton = EventSystem.current.currentSelectedGameObject; 
-        // nazov obrazka buttonu (child element buttonu je selectedButton/Image)
-        string imageName = selectedButton.transform.Find("Image").GetComponent<Image>().sprite.name;
-        // prislusny UI panel k buttonu
-        GameObject itemToShow = inventoryPanel.transform.Find(imageName + "_UI").gameObject;
+        // obrazok buttonu
+        Image image = selectedButton.transform.Find("Image").GetComponent<Image>();
+        // prislusny UI panel k buttonu podla nazvu obrazku
+        GameObject itemToShow = inventoryPanel.transform.Find(image.sprite.name + "_UI").gameObject;
         
         // zobrazi sa selected, skryju sa vsetky ostatne
         itemToShow.SetActive(!itemToShow.activeSelf);
@@ -93,10 +93,10 @@ public class Inventory : MonoBehaviour {
         // novy button z prefabu
         GameObject newInventoryButton = Instantiate(inventoryButtonPrefab, inventoryPanel.transform);
         
-        // nazov buttonu podla toho aky objekt zobrazuje
+        // nazov buttonu podla toho, aky objekt zobrazuje
         newInventoryButton.name = objectName+"_BUTTON";
         
-        // parent = InventoryPanel
+        // nastvenie InventoryPanel ako parenta buttonu
         newInventoryButton.transform.SetParent(inventoryPanel.transform);
        
         // pod buttonom je child objekt Image
@@ -124,12 +124,12 @@ public class Inventory : MonoBehaviour {
         Destroy(buttonToDestroy);
         // posunutie buttonov hore
         MoveButtons(currentPosY);
-        // odstranenie obrazku z distionary
+        // odstranenie obrazku z dictionary
         spriteDictionary.Remove(objectName);
     }
 
     // getnutie vsetkych buttonov s nizsou suradnicou Y ako maxY
-    private GameObject[] getButtonsLessThan(float maxY) {
+    private GameObject[] GetButtonsLessThan(float maxY) {
         List<GameObject> buttons = new List<GameObject>();
         
         // loop cez child objekty inventoryPanela
@@ -148,7 +148,7 @@ public class Inventory : MonoBehaviour {
     
     // posunutie vsetkych buttonov hore, ktore su pod odstranenym buttonom
     private void MoveButtons(float currentPosY) {
-        GameObject[] buttonsToMove = getButtonsLessThan(currentPosY);    // pole buttonov na posunutie
+        GameObject[] buttonsToMove = GetButtonsLessThan(currentPosY);    // pole buttonov na posunutie
 
         foreach (var button in buttonsToMove) {
             // posun suradnice Y += 50

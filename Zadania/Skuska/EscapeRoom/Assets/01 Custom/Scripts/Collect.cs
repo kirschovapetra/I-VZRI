@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿/************* zbieranie 'Collectable' objektov do inventaru ****************/
 
-// zbieranie 'Collectable' objektov do inventaru
+using UnityEngine;
+
 public class Collect : MonoBehaviour {
     [Header("Globálne premenné")]
     public GlobalObjectsContainer GOC;    

@@ -1,7 +1,8 @@
+/***************** zombie prenasleduje playera po NavMesh ******************/
+
 using UnityEngine;
 using UnityEngine.AI;
 
-// zombie prenasleduje playera po NavMesh
 public class ZombieFollowPlayer : MonoBehaviour {
     [Header("Player - LookAt Point")]
     public Transform target;  

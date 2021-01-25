@@ -1,10 +1,11 @@
-﻿using TMPro;
+﻿/********************** globalne premenne ************************/
+
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-// globalne premenne
 public class GlobalObjectsContainer : MonoBehaviour {
-    [Header("First Person Controller")] 
+    [Header("Player container")] 
     public GameObject player;
     [Header("Interaktívne objekty")] 
     public GameObject fuseBox;
@@ -21,6 +22,7 @@ public class GlobalObjectsContainer : MonoBehaviour {
     public GameObject lightsOn;
     public GameObject gameOver;
     [Header("Audio")] 
+    public AudioSource moveAudio;
     public AudioSource correctAudio;
     public AudioSource lockedAudio;
     public AudioSource unlockAudio;
@@ -29,17 +31,9 @@ public class GlobalObjectsContainer : MonoBehaviour {
     [Header("UI")] 
     public TextMeshProUGUI commentText;
     public Image gameOverScreen;
-    public TextMeshProUGUI[] startGameMessages;
     
     [HideInInspector]
     public Inventory inventory;
-
-    // text na zaciatku hry (backup)
-    [HideInInspector] 
-    public string[] startGameText = { "Počas nočnej prechádzky lesom\nťa kroky zaviedli do opusteného domu.",
-                                      "Dom však nie je taký opustený,\nako by sa na prvý pohľad zdalo...",
-                                      "Nájdi cestu von skôr, ako sa k tebe dostanú.",
-                                      "Máš na to 15 minút.",
-                                      "Veľa šťastia..."};
+    
     private void Start() { inventory = GetComponent<Inventory>(); }
 }

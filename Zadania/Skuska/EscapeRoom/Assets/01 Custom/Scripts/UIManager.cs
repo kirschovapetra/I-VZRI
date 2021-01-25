@@ -1,39 +1,40 @@
-﻿using System;
-using System.Collections;
+﻿/************************** Menu *****************************/
+
+using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// GUI
 public class UIManager : MonoBehaviour {
     
-    public bool mainMenu;
+    public static bool menuVisible;
+    public bool mainMenu; // T/F podla toho, v akej scene sa nachadzam
     public GameObject menuCanvas;
-    public GameObject settingsPanel;
+    public GameObject settingsPanel; 
     [Header("Kurzory")]
-    public Texture2D cursorSelect;       
+    public Texture2D cursorSelect;
     public Texture2D cursorPointer;
-   
-    public static bool menuVisible = false;
-    
+
     // audio
     private AudioManager audioManager;
     private Slider musicSlider;
     private Slider effectsSlider;
-
+    // % hlasitosti
     private TextMeshProUGUI musicPercent;
     private TextMeshProUGUI effectsPercent;
-
     // screen resolution
     private Toggle fullScreenToggle;
     private TMP_Dropdown resolutionDropdown;
     private bool changed;
+    // fade script
     private Fade fade;
     
     void Start() {
         audioManager = GetComponent<AudioManager>();
         fade = GetComponent<Fade>();
+        changed = false;
+        menuVisible = false;
         
         // slidery
         musicSlider = settingsPanel.transform.Find("MusicSlider").GetComponent<Slider>();
@@ -47,11 +48,9 @@ public class UIManager : MonoBehaviour {
         fullScreenToggle = settingsPanel.transform.Find("FullScreenToggle").GetComponent<Toggle>();
         resolutionDropdown = settingsPanel.transform.Find("ResolutionDropdown").GetComponent<TMP_Dropdown>();
 
-        if (mainMenu) {
-            SetCursorConfined(); // kurzor = pointer, pohybuje sa po celej obrazovke
-            fade.FadeIn(fade.fadeImage, 2.5f); // iba fade in ciernej obrazovky
-        } 
-        
+        // kurzor = pointer, pohybuje sa po celej obrazovke
+        if (mainMenu) SetCursorConfined();
+
         // nastavenie hlasitosti a dropdownu na hodnoty ulozene v PlayerPrefs
         fullScreenToggle.isOn = PlayerPrefs.GetInt("toggleIsOn",1) == 1;
         resolutionDropdown.value = PlayerPrefs.GetInt("dropdownValue",0);
@@ -59,6 +58,7 @@ public class UIManager : MonoBehaviour {
         effectsSlider.value = PlayerPrefs.GetFloat("effectsVolume",audioManager.defaultVolume);
         audioManager.SetVolume();
 
+        // pri spusteni novej hry sa resetuju nastavenia
         if (NewGameCheck.newGameStarted) {
             ResetSettings();
             NewGameCheck.newGameStarted = false;
@@ -96,6 +96,7 @@ public class UIManager : MonoBehaviour {
     private void ChangeDropdownVisibility(bool isEnabled) {
         resolutionDropdown.enabled = isEnabled;
         
+        // text, sipka na dropdowne
         var label = resolutionDropdown.transform.Find("Label").GetComponent<TextMeshProUGUI>();
         var arrow = resolutionDropdown.transform.Find("Arrow").GetComponent<Image>();
         
@@ -103,8 +104,7 @@ public class UIManager : MonoBehaviour {
         if (isEnabled) {
             label.alpha = 1.0f;
             arrow.color = Color.white;
-        }
-        else {
+        } else {
             label.alpha = 0.2f;
             arrow.color = new Color(0.34f, 0.34f, 0.34f);
         }
@@ -159,10 +159,7 @@ public class UIManager : MonoBehaviour {
     }
 
     // spustenie hry
-    public void StartGame() {
-        fade.FadeOut(fade.fadeImage, 2.5f);
-        StartCoroutine(GameManager.WaitAndLoadScene("Escape Room", 2.5f));
-    }
+    public void StartGame() { StartCoroutine(fade.FadeOutWithMessages()); }
 
     // ukoncenie hry
     public void Exit() {
@@ -175,13 +172,14 @@ public class UIManager : MonoBehaviour {
     
     // hlavne menu
     public void ExitToMainMenu() {
-        fade.FadeOut(fade.fadeImage, 2.5f);
+        fade.FadeOut();
         StartCoroutine(GameManager.WaitAndLoadScene("Main Menu", 2.5f));
         ToggleMenuOverlay();
     }
     
-    //nastavenie hlasitosti hudby 
+    //nastavenie hlasitosti hudby podla polohy slidera
     public void UpdateVolume() {
+        // zakliknuty slider
         GameObject slider = EventSystem.current.currentSelectedGameObject;
 
         if (slider == null) return;
@@ -193,6 +191,7 @@ public class UIManager : MonoBehaviour {
             PlayerPrefs.SetFloat("effectsVolume", effectsSlider.value);
         }
         
+        // set hlasitosti v PlayerPrefs a mixeri
         audioManager.SetVolume();
     }
 
@@ -211,8 +210,10 @@ public class UIManager : MonoBehaviour {
 
     // zmena rozlisenia obrazovky
     public void ChangeResolution() {
+        // resolution podla zakliknutej option z dropdownu
         var resolution = resolutionDropdown.options[resolutionDropdown.value];
         string[] splitString = resolution.text.Split('x');
+        
         Screen.SetResolution(Int32.Parse(splitString[0]), Int32.Parse(splitString[1]), false);
         PlayerPrefs.SetInt("dropdownValue", resolutionDropdown.value);
         
@@ -228,7 +229,7 @@ public class UIManager : MonoBehaviour {
     public void SetCursorLocked(RaycastHit hit) {
         // kurzor je locknuty v strede obrazovky
         Cursor.lockState = CursorLockMode.Locked;
-        // zmena ikonky kurzora        
+        // zmena ikonky kurzora podla typu objektu        
         if (hit.transform.CompareTag("Interactable") || hit.transform.CompareTag("Collectable"))
             Cursor.SetCursor(cursorSelect, Vector2.zero, CursorMode.Auto);
         else

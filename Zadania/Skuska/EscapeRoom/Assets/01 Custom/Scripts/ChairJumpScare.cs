@@ -1,7 +1,7 @@
-﻿using System;
+﻿/************* jumpscare na stolicke po prechode cez trigger ****************/
+
 using UnityEngine;
 
-// jumpscare na stolicke po prechode cez trigger
 public class ChairJumpScare : MonoBehaviour {
     
     public GameObject chair;

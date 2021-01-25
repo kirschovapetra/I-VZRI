@@ -1,8 +1,8 @@
-﻿using System;
+﻿/*************************** zadavanie kodu na keypade ****************************/
+
 using UnityEngine;
 using TMPro;
 
-// zadavanie kodu na keypade
 public class Keypad : MonoBehaviour {
     public GameManager gameManager;
     public TextMeshProUGUI keypadText;
@@ -12,13 +12,11 @@ public class Keypad : MonoBehaviour {
         keypadText.text = "";
         keypadText.color = Color.white;
         
-        // zelene tlacitko ma 2 zvuky: spravny/nespravny
         if (transform.name=="Green")
-            sounds = GetComponents<AudioSource>();
+            sounds = GetComponents<AudioSource>(); // zelene tlacitko ma 2 zvuky: spravny/nespravny
     }
 
     private void OnMouseDown() {
-        // pri pauze hry sa nic nedeje
         if (GameManager.paused) return;
 
         PressKey();
@@ -37,7 +35,6 @@ public class Keypad : MonoBehaviour {
     }
 
     private void Update() {
-
         // ked prekroci pocet znakov -> nespravny kod, displej sa vymaze
         if (keypadText.text.Length>6) {
             keypadText.color = Color.red;
@@ -61,7 +58,7 @@ public class Keypad : MonoBehaviour {
     private void Check(){
         bool result = keypadText.text.Equals("4703");
         
-        // set premennej correctKeypadCode v GameManageri, ci je kod spravny/nespravny
+        // set premennej correctKeypadCode v GameManageri
         gameManager.correctKeypadCode = result;    
         
         // zmena farby displeja, zvukove efekty

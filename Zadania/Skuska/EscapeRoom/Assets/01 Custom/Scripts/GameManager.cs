@@ -1,54 +1,51 @@
-﻿using System;
+﻿/************************* management hry ****************************/
+
+using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-// manager hry
 public class GameManager : MonoBehaviour {
     [Header("Main kamera")]
     public Camera cam;
-    
     // bool premenne
     [HideInInspector] public bool correctKeypadCode;
-    public static bool gameOver = false;
+    public static bool gameOver;
     public static bool paused;       
     public static bool exitingToMenu;
     private bool alreadyPlayed;
-    
     // raycast
     private Ray ray;
     private RaycastHit hit;
-    
     // spravny kod knih
     private readonly bool[] bookCode = {true, false, true, true, false, false};
-    
     // animatory
     private Animator fuseBoxAnimator;
     private Animator musicBoxAnimator;
-    
     // globalne premenne
     private GlobalObjectsContainer GOC;    
     // UI
     private UIManager uiManager;
-    private Fade fade;
-    
+
     void Start() {
+        GOC = GetComponent<GlobalObjectsContainer>();
+        uiManager = GetComponent<UIManager>();
+        
+        // default hodnoty
         exitingToMenu = false;
+        correctKeypadCode = false;
+        gameOver = false;
+        paused = false;       
+        exitingToMenu = false;
+        alreadyPlayed = false;
         
         // kurzor locknuty v strede obrazovky
         Cursor.lockState = CursorLockMode.Locked;        
         Cursor.visible = true;
 
-        GOC = GetComponent<GlobalObjectsContainer>();
-        uiManager = GetComponent<UIManager>();
-        fade = GetComponent<Fade>();
-        
         // animatory
         fuseBoxAnimator = GOC.fuseBox.GetComponent<Animator>();
         musicBoxAnimator = GOC.musicBox.GetComponent<Animator>();
-
-        // fade in + text na zaciatku hry
-        StartCoroutine(FadeInWithMessages());
     }
 
     void Update() {
@@ -63,8 +60,7 @@ public class GameManager : MonoBehaviour {
         ray = cam.ScreenPointToRay(Input.mousePosition);
         if (!Physics.Raycast(ray, out hit, 10.0f)) return;
         
-        // nastavenie kurzora
-        SetCursor();               
+        SetCursor(); // nastavenie kurzora               
         
         if (paused) return;
         
@@ -72,84 +68,75 @@ public class GameManager : MonoBehaviour {
        if (Input.GetMouseButtonDown(0) && hit.transform.CompareTag("Interactable")) 
            ObjectOnClick(hit.transform.name);
 
-       // spravny kod knih -> animacia posunutia obrazu
+       // spravny kod knih -> posunutie obrazu
        if (CorrectBookCode()) {
            if (!alreadyPlayed) {
-               // kamera sa otaca na obraz, zvukovy efekt
-               MouseLook_Custom.SetTransformToFollow(GOC.painting, 200f);
-               GOC.correctAudio.Play();
+               StartCoroutine(nameof(MovePicture));
                alreadyPlayed = true;
            }
-           // animacia
-           Animator animator = GOC.painting.GetComponent<Animator>();
-           animator.SetBool("Interact", true);
        }
 
-       // spravny kod keypadu -> odomkne sa suflik
-        if (correctKeypadCode) {
-            // kamera sa otaca na suflik
-            MouseLook_Custom.SetTransformToFollow(GOC.drawerLocked, 200f);
-            
-            // odomknutie, animacia
-            GOC.drawerLocked.GetComponent<Interact>().locked = false;
-            Animator animator = GOC.drawerLocked.GetComponent<Animator>();
-            animator.SetBool("Interact", true);
-            correctKeypadCode = false;
-        }
+       // spravny kod keypadu -> odomknutie suflika
+       if (correctKeypadCode) { 
+           StartCoroutine(UnlockDrawer());
+           correctKeypadCode = false;
+       }
 
-        bool musicBoxFinished = musicBoxAnimator.GetBool("SwitchOn") && 
-                                   !GOC.musicBox.GetComponent<AudioSource>().isPlaying;
-        
-        // hracia skrinka dohrala -> vysunie sa kluc
-        if (musicBoxFinished) {
-            GameObject trapDoorKey = GameObject.Find("TrapDoorKey");
-            
-            // kamera sa otaca za klucom
-            MouseLook_Custom.SetTransformToFollow(trapDoorKey, 200f);
-            
-            // kluc bude 'Collectable' - bude sa dat pridat do inventara
-            GOC.correctAudio.Play();
-            trapDoorKey.tag = "Collectable";
-            musicBoxAnimator.SetBool("SwitchOn",false);
-        }
-        
+       // hracia skrinka dohrala -> vysunutie kluca
+        MusicBoxFinish(musicBoxAnimator.GetBool("SwitchOn") &&
+                       !GOC.musicBox.GetComponent<AudioSource>().isPlaying);
+
     }
     
     
     /************************************ PRIVATE *************************************/
     
-    // zaciatok hry - fade in + text
-    private IEnumerator FadeInWithMessages() {
-        // na zaciatku pauza, delay
-        paused = true;
-        yield return new WaitForSeconds(2.0f);
+    private IEnumerator UnlockDrawer() {
 
-        // zobrazuje sa po jednej vete
-        foreach (var message in GOC.startGameMessages) {
-            string tempMessage = message.text;
-            message.gameObject.SetActive(true);
-            
-            // postupne zobrazovanie textu
-            StartCoroutine(fade.FadeInText(message));
-            
-            // delay podla dlzky textu
-            yield return new WaitForSeconds(tempMessage.Length < 50 ? 5f : 7f);
-            
-            message.gameObject.SetActive(false);
-        }
+        // odomknutie
+        GOC.unlockAudio.Play(); 
+        GOC.drawerLocked.GetComponent<Interact>().locked = false;
         
-        // fade in obrazovky
-        fade.FadeIn(fade.fadeImage,2.5f);
+        // delay
+        yield return new WaitForSeconds(1.0f);
         
-        yield return new WaitForSeconds(2.5f);
+        // otvorenie
+        GOC.moveAudio.Play();
+        Animator animator = GOC.drawerLocked.GetComponent<Animator>();
+        animator.SetBool("Interact", true);
         
-        // spusti sa casomiera
-        Clock.stop = false;
-        paused = false;
+    }
+
+    private IEnumerator MovePicture() {
+        GOC.correctAudio.Play();
+        
+        yield return new WaitForSeconds(1.0f);
+        
+        // posunutie obrazu
+        GOC.moveAudio.Play();
+        Animator animator = GOC.painting.GetComponent<Animator>();
+        animator.SetBool("Interact", true);
+        
+    }
+
+    private void MusicBoxFinish(bool finished) {
+        if (!finished) return;
+     
+        GOC.correctAudio.Play();
+        
+        GameObject trapDoorKey = GameObject.Find("TrapDoorKey");
+            
+        // kamera sa otaca za klucom
+        MouseLook_Custom.SetTransformToFollow(trapDoorKey, 200f);
+        
+        // kluc bude 'Collectable'
+        trapDoorKey.tag = "Collectable";
+        musicBoxAnimator.SetBool("SwitchOn",false);
+
     }
     
-    // interakcie s klikatelnymi predmetmi
-    private void ObjectOnClick(String clickedObjectName) {
+    // interakcie s 'Interactable' predmetmi
+    private void ObjectOnClick(string clickedObjectName) {
         
         switch (clickedObjectName) {
                
@@ -219,12 +206,15 @@ public class GameManager : MonoBehaviour {
     
 
     private IEnumerator GameOver() {
+        
+        yield return new WaitForSeconds(2.0f);
+        
         // vypnut svetla
         GOC.lightsOn.SetActive(false);
         GOC.lightsOff.SetActive(true);
+        GOC.fuseBox.GetComponent<AudioSource>().Play();
+        
         // otocenie kamery
-        MouseLook_Custom.SetTransformToFollow(GOC.gameOver.transform.Find("MainDoor").gameObject, 100f);
-
         yield return new WaitForSeconds(1.0f);
         
         // blikanie svetiel, rozbitie dveri
@@ -234,6 +224,7 @@ public class GameManager : MonoBehaviour {
         
         // audio
         GOC.player.GetComponent<AudioSource>().Play();
+        
         // zombici
         ZombieFollowPlayer.gameOver = true;
         
@@ -241,12 +232,12 @@ public class GameManager : MonoBehaviour {
 
         // player zomrie
         GOC.player.GetComponent<Animator>().SetBool("Dead",true);
+        
         // game over obrazovka, fade out
         Fade fade = GetComponent<Fade>();
         StartCoroutine(fade.FadeOutMultiple(GOC.gameOverScreen, fade.fadeImage));
-        StartCoroutine(WaitAndLoadScene("Escape Room", 5f));     // reload hry
+        StartCoroutine(WaitAndLoadScene("Escape Room", 6f));     // reload hry
     }
-    
     
     // zmena ikony kurzora
     private void SetCursor() {

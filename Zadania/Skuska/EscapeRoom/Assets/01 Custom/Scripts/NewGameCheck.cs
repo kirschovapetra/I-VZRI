@@ -1,20 +1,18 @@
+/******************* kontrola spustenia novej hry ********************/
+
 using UnityEngine;
 
-// check na spustenie novej hry
 public class NewGameCheck : MonoBehaviour {
     
     public static bool newGameStarted;
     private static NewGameCheck instance;
     void Awake() {
-        // uz objekt v scene existuje
-        if (instance != null && instance != this) {
+        if (instance != null && instance != this) {   // uz objekt v scene existuje -> destroy
             Destroy(gameObject);
-            return;
+        } else {                                     // objekt zostane existovat aj po prepnuti sceny
+            instance = this;
+            newGameStarted = true;
+            DontDestroyOnLoad(gameObject);
         }
-        
-        instance = this;
-        newGameStarted = true;
-        DontDestroyOnLoad(gameObject);
-
     }
 }
